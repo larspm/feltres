@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html lang="no">
+  <body>
+    {% regroup stevner by dato.year as sesongliste %}
+    {% for sesong in sesongliste %}
+    <h1>{{sesong.grouper}}</h1>
+    {% for stevne in sesong.list %}
+    <a href="{{stevne.get_html_url}}">{{stevne.navn}}</a>
+    {% endfor %}
+    {% endfor %}
+  </body>
+</html>

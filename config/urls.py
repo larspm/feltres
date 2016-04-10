@@ -16,6 +16,10 @@ Including another URLconf
 from django.conf.urls import url
 from django.contrib import admin
 
+import resultater.views
+
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
+    url(r'^resultater/(?P<stevnenr>[0-9]+)/$', resultater.views.stevne, name='stevne-html'),
+    url(r'^resultater/$', resultater.views.index)
 ]

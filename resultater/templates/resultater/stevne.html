@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+  <title>Stevneresultater - {{navn}}</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+</head>
+<body>
+
+<div class="container">
+  <div class="jumbotron">
+    <h1>{{navn}}</h1>
+    <dl>
+      <dt>Steventype</dt>
+      <dd>{{stevnetype}}</dd>
+      <dt>Arrangør</dt>
+      <dd>{{arrangør}}</dd>
+      <dt>Dato</dt>
+      <dd>{{dato}}</dd>
+      <dt>Sted</dt>
+      <dd>{{sted}}</dd>
+      <dt>Stevneleder</dt>
+      <dd>{{stevneleder}}</dd>
+      <dt>Premiering</dt>
+      <dd>{{premiering}}</dd>
+      <dt>Oppnåelig poengsum (spesial)</dt>
+      <dd>{{maxsum_fgmr}} ({{maxsum_spes}})</dd>
+    </dl>
+  </div>
+
+  {% for øvelsedata in resultater|dictsort:"rekkefølge" %}
+  <h2>{{øvelsedata.øvelse}}</h2>
+  {% autoescape off %}
+  {{ øvelsedata.plot }}
+  {% endautoescape %}
+  {% for klassedata in øvelsedata.klasser|dictsort:"rekkefølge" %}
+  <h3>{{klassedata.klasse}}</h3>
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th>Nr. </th>
+        <th>Navn</th>
+        <th>Klubb</th>
+        {% for f in figurer %}
+        <th>{{forloop.counter}}</th>
+        {% endfor %}
+        <th>Sum</th>
+        <th>Soner</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for s in klassedata.skyttere|dictsortreversed:"rekkefølge" %}
+      <tr>
+        <td>{{forloop.counter}}</td>
+        <td>{{s.navn}}</td>
+        <td>{{s.klubb}}</td>
+        {% for p in s.poeng %}
+        <td>{{p}}</td>
+        {% endfor %}
+        <td>{{s.poengsum}}</td>
+        <td>{{s.soner}}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% endfor %}
+  {% endfor %}
+
+</div>
+
+</body>
+</html>
