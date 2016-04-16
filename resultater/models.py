@@ -96,3 +96,6 @@ class Stevne(models.Model):
 
     def get_html_url(self):
         return reverse('stevne-html', kwargs={'stevnenr':self.navn})
+
+    def get_xlsx_url(self):
+        return reverse('stevne-xlsx', kwargs={'stevnenr':self.navn})

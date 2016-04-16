@@ -2,6 +2,10 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
+from openpyxl import Workbook
+from openpyxl.writer.excel import save_virtual_workbook
+from openpyxl.styles import Font, Alignment
+
 from io import StringIO
 
 from django.shortcuts import render
@@ -38,7 +42,7 @@ def index(request):
     context = {'stevner':Stevne.objects.all()}
     return render(request, 'resultater/index.html', context)
 
-def stevne(request, stevnenr):
+def stevne_html(request, stevnenr):
     try:
         s = Stevne.objects.get(navn=stevnenr)
     except:
@@ -59,10 +63,81 @@ def stevne(request, stevnenr):
         'premiering':s.premiering,
         'figurer':figurer,
         'maxsum_fgmr':maxsum_fgmr,
-        'maxsum_spes':maxsum_spes
+        'maxsum_spes':maxsum_spes,
+        'regneark':s.get_xlsx_url()
     }
 
+    resultatliste = lag_resultatliste(s)
 
+    context['resultater'] = resultatliste
+
+    return render(request, 'resultater/stevne.html', context)
+
+def stevne_xlsx(request, stevnenr):
+    try:
+        s = Stevne.objects.get(navn=stevnenr)
+    except:
+        return HttpResponse("Stevnet {} finnes ikke".format(stevnenr))
+
+    rl = lag_resultatliste(s)
+    rl.sort(key=lambda x: x['rekkefølge'])
+
+    figurer = (s.figurer1,s.figurer2,s.figurer3,s.figurer4,s.figurer5,s.figurer6,s.figurer7,s.figurer8,s.figurer9,s.figurer10)[:s.standplasser]
+    maxsum_fgmr = sum(6 + min(f,6) for f in figurer)
+    maxsum_spes = sum(5 + min(f,5) for f in figurer)
+
+    wb = Workbook()
+    ws = wb.active
+
+    ws['B01'] = 'Resultatliste'
+    ws['B01'].font = Font(size=16, bold=True)
+    ws['B03'] = 'Stevne';                    ws['C03'] = 'Åpent stevne'
+    ws['B04'] = 'Program';                   ws['C04'] = 'TBD'
+    ws['B05'] = 'Arrangør';                  ws['C05'] = s.arrangør
+    ws['B06'] = 'Dato';                      ws['C06'] = str(s.dato)
+    ws['B07'] = 'Sted';                      ws['C07'] = s.sted
+    ws['B08'] = 'Stevnenummer';              ws['C08'] = s.navn
+    ws['B09'] = 'Stevneleder';               ws['C09'] = s.stevneleder
+    ws['B10'] = 'Antall deltakere';          ws['C10'] = 'TBD'
+    ws['B11'] = 'Premiering';                ws['C11'] = s.premiering
+    ws['B12'] = 'Oppnåelig poengsum (spes)'; ws['C12'] = '{} ({})'.format(maxsum_fgmr, maxsum_spes)
+    ws['B13'] = 'Maks antall innertreff';    ws['C13'] = 'Tja'
+
+    ws.column_dimensions['A'].width = 4
+    ws.column_dimensions['B'].width = 23
+    ws.column_dimensions['C'].width = 15
+    for kol in 'DEFGHIJKLMNOPQRSTUVW':
+        ws.column_dimensions[kol].width = 4
+
+    rad = 15
+    for ød in rl:
+        ws.cell(row=rad, column=2, value=ød['øvelse']).font=Font(bold=True)
+        rad += 1
+        for kd in ød['klasser']:
+            ws.cell(row=rad, column=2, value=kd['klasse']).font=Font(bold=True)
+            rad += 1
+            c=ws.cell(row=rad, column=1, value='Nr.');c.font=Font(bold=True);c.alignment = Alignment(horizontal='center')
+            c=ws.cell(row=rad, column=2, value='Navn');c.font=Font(bold=True)
+            c=ws.cell(row=rad, column=3, value='Klubb');c.font=Font(bold=True)
+            for stpl in range(s.standplasser):
+                c=ws.cell(row=rad, column=4+stpl, value=stpl+1);c.font=Font(bold=True);c.alignment = Alignment(horizontal='center')
+            c=ws.cell(row=rad, column=5+stpl, value='SUM');c.font=Font(bold=True,size=9);c.alignment = Alignment(horizontal='center')
+            c=ws.cell(row=rad, column=6+stpl, value='(*)');c.font=Font(bold=True);c.alignment = Alignment(horizontal='center')
+            rad += 1
+            for nr, sk in enumerate(kd['skyttere'], 1):
+                ws.cell(row=rad, column=1, value=nr).alignment = Alignment(horizontal='center')
+                ws.cell(row=rad, column=2, value=sk['navn'])
+                ws.cell(row=rad, column=3, value=sk['klubb'])
+                for stpl, p in enumerate(sk['poeng']):
+                    ws.cell(row=rad, column=4+stpl, value=p).alignment = Alignment(horizontal='center')
+                c=ws.cell(row=rad, column=5+stpl, value=sk['poengsum']);c.font = Font(bold=True);c.alignment = Alignment(horizontal='center')
+                c=ws.cell(row=rad, column=6+stpl, value=sk['soner']);c.font = Font(italic=True);c.alignment = Alignment(horizontal='center')
+                rad += 1
+            rad += 1
+
+    return HttpResponse(save_virtual_workbook(wb), content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+
+def lag_resultatliste(s, lag_plot=False):
     resultatmap={}
     for start in s.starter.all():
         ss = {}
@@ -100,16 +175,15 @@ def stevne(request, stevnenr):
         poengliste  = [[s['poengsum'] for s in k['skyttere']]for k in øvelsedata['klasser']]
         klasseliste = [k['klasse'] for k in øvelsedata['klasser']]
         fargeliste  = [klassefarger[k] for k in klasseliste]
-        plt.clf()
-        plt.figure(figsize=(6,4))
-        plt.hist(poengliste, bins=maxsum_fgmr+1, range=(0,maxsum_fgmr), color=fargeliste, stacked=True)
-        plt.legend(klasseliste, framealpha=0.5, loc='upper left')
-        svg = StringIO()
-        plt.savefig(svg, format='svg')
-        øvelsedata['plot'] = svg.getvalue()
+        if lag_plot:
+            plt.clf()
+            plt.figure(figsize=(6,4))
+            plt.hist(poengliste, bins=maxsum_fgmr+1, range=(0,maxsum_fgmr), color=fargeliste, stacked=True)
+            plt.legend(klasseliste, framealpha=0.5, loc='upper left')
+            svg = StringIO()
+            plt.savefig(svg, format='svg')
+            øvelsedata['plot'] = svg.getvalue()
 
         resultatliste.append(øvelsedata)
-    context['resultater'] = resultatliste
 
-
-    return render(request, 'resultater/stevne.html', context)
+    return resultatliste
