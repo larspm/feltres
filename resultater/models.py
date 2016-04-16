@@ -38,7 +38,7 @@ KLASSER = (
 class Start(models.Model):
     navn = models.CharField(max_length=60)
     klubb = models.CharField(max_length=60)
-    øvelse = models.CharField(max_length=2, choices=ØVELSER)
+    øvelse = models.CharField(max_length=15, choices=ØVELSER)
     klasse = models.CharField(max_length=11, choices=KLASSER)
 
     poeng1 = models.PositiveIntegerField(default=0)
