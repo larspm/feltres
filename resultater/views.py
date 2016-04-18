@@ -137,6 +137,19 @@ def stevne_xlsx(request, stevnenr):
 
     return HttpResponse(save_virtual_workbook(wb), content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
 
+def stevner_xml(request, stevnenr=None, år=None, klubb='', skytter=''):
+
+    filt = {}
+    if stevnenr: filt['navn'] = stevnenr
+    if år: filt['dato__year'] = år
+
+    try:
+        context = {'stevner':Stevne.objects.filter(**filt), 'klubb':klubb, 'skytter':skytter}
+    except:
+        return HttpResponse("Stevnet {} finnes ikke".format(stevnenr))
+
+    return render(request, 'resultater/stevner.xml', context, content_type='application/xml')
+
 def lag_resultatliste(s, lag_plot=False):
     resultatmap={}
     for start in s.starter.all():

@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<stevner>
+
+  {% for stevne in stevner %}
+  <stevne navn="{{stevne.navn}}" år="{{stevne.dato.year}}" måned="{{stevne.dato.month}}" dag="{{stevne.dato.day}}" krets="{{stevne.krets}}" distrikt="{{stevne.distrikt}}" type="{{stevne.stype}}" arrangør="{{stevne.arrangør}}" sted="{{stevne.sted}}" stevneleder="{{stevne.stevneleder}}" premiering="{{stevne.premiering}}">
+
+    <løype standplasser="{{stevne.standplasser}}">
+      {% if stevne.standplasser >=  1 %}<standplass_1 figurer="{{stevne.figurer1}}" soner="0"/>{% endif %}
+      {% if stevne.standplasser >=  2 %}<standplass_2 figurer="{{stevne.figurer2}}" soner="0"/>{% endif %}
+      {% if stevne.standplasser >=  3 %}<standplass_3 figurer="{{stevne.figurer3}}" soner="0"/>{% endif %}
+      {% if stevne.standplasser >=  4 %}<standplass_4 figurer="{{stevne.figurer4}}" soner="0"/>{% endif %}
+      {% if stevne.standplasser >=  5 %}<standplass_5 figurer="{{stevne.figurer5}}" soner="0"/>{% endif %}
+      {% if stevne.standplasser >=  6 %}<standplass_6 figurer="{{stevne.figurer6}}" soner="0"/>{% endif %}
+      {% if stevne.standplasser >=  7 %}<standplass_7 figurer="{{stevne.figurer7}}" soner="0"/>{% endif %}
+      {% if stevne.standplasser >=  8 %}<standplass_8 figurer="{{stevne.figurer8}}" soner="0"/>{% endif %}
+      {% if stevne.standplasser >=  9 %}<standplass_9 figurer="{{stevne.figurer9}}" soner="0"/>{% endif %}
+      {% if stevne.standplasser >= 10 %}<standplass_10 figurer="{{stevne.figurer10}}" soner="0"/>{% endif %}
+    </løype>
+
+    <starter>
+      {% for start in stevne.starter.all %}
+      {% if start.klubb == klubb or klubb == "" %}
+      {% if start.navn == skytter or skytter == "" %}
+      <start navn="{{start.navn}}" klubb="{{start.klubb}}" øvelse="{{start.øvelse}}" klasse="{{start.klasse}}">
+        {% if stevne.standplasser >=  1 %}<standplass_1 poeng="{{start.poeng1}}" soner="{{start.soner1}}"/>{% endif %}
+        {% if stevne.standplasser >=  2 %}<standplass_2 poeng="{{start.poeng2}}" soner="{{start.soner2}}"/>{% endif %}
+        {% if stevne.standplasser >=  3 %}<standplass_3 poeng="{{start.poeng3}}" soner="{{start.soner3}}"/>{% endif %}
+        {% if stevne.standplasser >=  4 %}<standplass_4 poeng="{{start.poeng4}}" soner="{{start.soner4}}"/>{% endif %}
+        {% if stevne.standplasser >=  5 %}<standplass_5 poeng="{{start.poeng5}}" soner="{{start.soner5}}"/>{% endif %}
+        {% if stevne.standplasser >=  6 %}<standplass_6 poeng="{{start.poeng6}}" soner="{{start.soner6}}"/>{% endif %}
+        {% if stevne.standplasser >=  7 %}<standplass_7 poeng="{{start.poeng7}}" soner="{{start.soner7}}"/>{% endif %}
+        {% if stevne.standplasser >=  8 %}<standplass_8 poeng="{{start.poeng8}}" soner="{{start.soner8}}"/>{% endif %}
+        {% if stevne.standplasser >=  9 %}<standplass_9 poeng="{{start.poeng9}}" soner="{{start.soner9}}"/>{% endif %}
+        {% if stevne.standplasser >= 10 %}<standplass_10 poeng="{{start.poeng10}}" soner="{{start.soner10}}"/>{% endif %}
+      </start>
+      {% endif %}
+      {% endif %}
+      {% endfor %}
+    </starter>
+
+  </stevne>
+  {% endfor %}
+</stevner>

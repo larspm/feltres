@@ -20,7 +20,12 @@ import resultater.views
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
-    url(r'^resultater/(?P<stevnenr>[0-9]+).xlsx$', resultater.views.stevne_xlsx, name='stevne-xlsx'),
-    url(r'^resultater/(?P<stevnenr>[0-9]+)/$',     resultater.views.stevne_html, name='stevne-html'),
-    url(r'^resultater/$', resultater.views.index)
+    url(r'^resultater/xml/(?P<år>[0-9]{4})/(?P<klubb>[^/]+)/(?P<skytter>[^/]+)$', resultater.views.stevner_xml, name='stevner-xml'),
+    url(r'^resultater/xml/(?P<år>[0-9]{4})/(?P<klubb>[^/]+)$',                    resultater.views.stevner_xml, name='stevner-xml'),
+    url(r'^resultater/xml/(?P<år>[0-9]{4})$',                               resultater.views.stevner_xml, name='stevner-xml'),
+    url(r'^resultater/xml/$',                                               resultater.views.stevner_xml, name='stevner-xml'),
+    url(r'^resultater/(?P<stevnenr>[0-9]+).xlsx$',                          resultater.views.stevne_xlsx, name='stevne-xlsx'),
+    url(r'^resultater/(?P<stevnenr>[0-9]+).xml$',                           resultater.views.stevner_xml, name='stevne-xml'),
+    url(r'^resultater/(?P<stevnenr>[0-9]+)/$',                              resultater.views.stevne_html, name='stevne-html'),
+    url(r'^resultater/$',                                                   resultater.views.index)
 ]
