@@ -67,7 +67,7 @@ def stevne_html(request, stevnenr):
         'regneark':s.get_xlsx_url()
     }
 
-    resultatliste = lag_resultatliste(s)
+    resultatliste = lag_resultatliste(s, maxsum_fgmr, maxsum_spes, True)
 
     context['resultater'] = resultatliste
 
@@ -79,12 +79,12 @@ def stevne_xlsx(request, stevnenr):
     except:
         return HttpResponse("Stevnet {} finnes ikke".format(stevnenr))
 
-    rl = lag_resultatliste(s)
-    rl.sort(key=lambda x: x['rekkefølge'])
-
     figurer = (s.figurer1,s.figurer2,s.figurer3,s.figurer4,s.figurer5,s.figurer6,s.figurer7,s.figurer8,s.figurer9,s.figurer10)[:s.standplasser]
     maxsum_fgmr = sum(6 + min(f,6) for f in figurer)
     maxsum_spes = sum(5 + min(f,5) for f in figurer)
+
+    rl = lag_resultatliste(s, maxsum_fgmr, maxsum_spes)
+    rl.sort(key=lambda x: x['rekkefølge'])
 
     wb = Workbook()
     ws = wb.active
@@ -150,7 +150,7 @@ def stevner_xml(request, stevnenr=None, år=None, klubb='', skytter=''):
 
     return render(request, 'resultater/stevner.xml', context, content_type='application/xml')
 
-def lag_resultatliste(s, lag_plot=False):
+def lag_resultatliste(s, maxsum_fgmr, maxsum_spes, lag_plot=False):
     resultatmap={}
     for start in s.starter.all():
         ss = {}
@@ -190,9 +190,10 @@ def lag_resultatliste(s, lag_plot=False):
         fargeliste  = [klassefarger[k] for k in klasseliste]
         if lag_plot:
             plt.clf()
-            plt.figure(figsize=(6,4))
+            plt.figure(figsize=(8,4))
             plt.hist(poengliste, bins=maxsum_fgmr+1, range=(0,maxsum_fgmr), color=fargeliste, stacked=True)
             plt.legend(klasseliste, framealpha=0.5, loc='upper left')
+            plt.xlim(0,maxsum_fgmr)
             svg = StringIO()
             plt.savefig(svg, format='svg')
             øvelsedata['plot'] = svg.getvalue()
