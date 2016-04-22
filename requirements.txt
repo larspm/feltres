@@ -1,0 +1,7 @@
+dj-database-url
+Django
+django-toolbelt
+gunicorn==19.4.5
+psycopg2
+whitenoise
+matplotlib
